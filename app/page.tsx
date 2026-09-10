@@ -246,7 +246,7 @@ export default function Page() {
           <div className="relative">
             <div className="bg-white p-4 pb-16 shadow-xl rounded-sm transform -rotate-3 hover:rotate-0 transition-transform duration-500 max-w-md mx-auto">
               <div className="relative aspect-square w-full bg-slate-200 rounded-sm overflow-hidden">
-                <Image src={`/p/bd8d25977046c7ae.jpg`} alt="The TAP Approach" fill className="object-cover" />
+                <Image src={`/instagram/bd8d25977046c7ae.jpg`} alt="The TAP Approach" fill className="object-cover" />
               </div>
               <div className="absolute bottom-6 left-0 right-0 text-center font-playfair italic text-slate-500">Your pet's new happy place</div>
             </div>
@@ -307,7 +307,7 @@ export default function Page() {
             {posts.map((post, i) => (
               <button key={i} onClick={() => setSelectedPost(post)} className="flex-shrink-0 w-72 md:w-80 snap-center group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow text-left">
                 <div className="aspect-[4/5] relative bg-slate-100">
-                  <Image src={`/p/${post.image}.jpg`} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <Image src={`/instagram/${post.image}.jpg`} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-t from-navy/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
                     <div className="text-white">
                       <h4 className="font-semibold text-lg">{post.title}</h4>
@@ -401,7 +401,7 @@ export default function Page() {
           {selectedPost && (
             <div className="flex flex-col">
               <div className="relative aspect-square w-full bg-slate-100">
-                <Image src={`/p/${selectedPost.image}.jpg`} alt={selectedPost.title} fill className="object-cover" />
+                <Image src={`/instagram/${selectedPost.image}.jpg`} alt={selectedPost.title} fill className="object-cover" />
               </div>
               <div className="p-6 text-center space-y-4">
                 <DialogTitle className="text-2xl font-playfair text-navy">{selectedPost.title}</DialogTitle>
