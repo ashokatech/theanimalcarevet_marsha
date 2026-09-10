@@ -52,17 +52,27 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'VeterinaryCare',
-    name: 'The Animal Place',
+    name: 'The Animal Place Veterinary Clinic',
     image: 'https://theanimalplace.vet/tap-logo.jpg',
     '@id': 'https://theanimalplace.vet',
     url: 'https://theanimalplace.vet',
-    telephone: '+910000000000',
+    // [DATA NEEDED: Official Clinic Phone Number]
+    telephone: '+91-XXXXXXXXXX',
+    priceRange: '₹₹',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Srinagar Colony, Yousufguda',
+      // [DATA NEEDED: Exact Building / Door No. & Landmark]
+      streetAddress: 'Srinagar Colony, Yousufguda [DATA NEEDED: Exact Landmark]',
       addressLocality: 'Hyderabad',
+      addressRegion: 'Telangana',
       postalCode: '500073',
       addressCountry: 'IN'
+    },
+    geo: {
+      '@type': 'GeoCoordinates',
+      // [DATA NEEDED: Latitude & Longitude for Srinagar Colony location]
+      latitude: '17.4368',
+      longitude: '78.4357'
     },
     openingHoursSpecification: [
       {
