@@ -22,50 +22,13 @@ const posts = [
 ];
 
 const services = [
-  { Icon: Stethoscope, title: 'Everyday wellness', text: 'Unhurried check-ups, preventive care, and a plan for every life stage.', tag: 'A HEALTHY START', post: 8 },
-  { Icon: Activity, title: 'Diagnostics & surgery', text: 'Digital imaging, in-house testing, surgical care, and supported recovery.', tag: 'ANSWERS. THEN ACTION.', post: 1 },
-  { Icon: Syringe, title: 'Vaccines & protection', text: 'Vaccination visits and parasite care tailored to your companion.', tag: 'SMALL STEPS. BIG CARE.', post: 5 },
-  { Icon: Scissors, title: 'Grooming & dental', text: 'Healthy coats, comfortable skin, and brighter smiles from nose to tail.', tag: 'FEEL-GOOD CARE', post: 7 },
+  { Icon: Stethoscope, title: 'Preventive & Wellness', text: 'Thorough, unhurried examinations prioritizing longevity. We catch issues before they surface.', tag: 'PROACTIVE', post: 8 },
+  { Icon: Activity, title: 'Advanced Diagnostics', text: 'State-of-the-art imaging and in-house laboratory analysis. Precise answers, without the wait.', tag: 'PRECISION', post: 1 },
+  { Icon: Syringe, title: 'Surgical & Dental', text: 'Minimally invasive procedures with advanced anesthetic monitoring and dedicated pain management.', tag: 'EXPERTISE', post: 5 },
+  { Icon: Scissors, title: 'Therapeutic Grooming', text: 'More than aesthetics. Medicated baths and coat care designed for dermatological health.', tag: 'COMFORT', post: 7 },
 ];
 
-const stats = [
-  { value: 500, suffix: '+', label: 'Happy pets cared for' },
-  { value: 15, suffix: '+', label: 'Years combined experience' },
-  { value: 9, suffix: '', label: 'Specialized services' },
-  { value: 7, suffix: '/7', label: 'Days open for you' },
-];
 
-function AnimatedCounter({ target, suffix }: { target: number; suffix: string }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
-  const counted = useRef(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !counted.current) {
-          counted.current = true;
-          const duration = 2000;
-          const start = performance.now();
-          const step = (now: number) => {
-            const progress = Math.min((now - start) / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
-            setCount(Math.round(eased * target));
-            if (progress < 1) requestAnimationFrame(step);
-          };
-          requestAnimationFrame(step);
-        }
-      },
-      { threshold: 0.3 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [target]);
-
-  return <div ref={ref} className="tap-stat-number text-4xl font-bold font-playfair">{count}{suffix}</div>;
-}
 
 export default function Page() {
   const sceneRef = useRef<HTMLDivElement>(null);
@@ -178,19 +141,7 @@ export default function Page() {
         </div>
       </section>
 
-      <section className="tap-stats bg-navy text-white py-20 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white to-transparent"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 text-center">
-            {stats.map((stat, i) => (
-              <div key={i} className="flex flex-col items-center justify-center space-y-2">
-                <AnimatedCounter target={stat.value} suffix={stat.suffix} />
-                <div className="text-pink-200 text-sm font-medium">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       <section id="approach" className="tap-approach py-24 bg-slate-50">
         <div className="container mx-auto px-4 grid md:grid-cols-2 gap-16 items-center">
@@ -208,19 +159,19 @@ export default function Page() {
           <div className="space-y-8">
             <div>
               <div className="inline-flex items-center gap-2 text-pink-600 font-medium tracking-wide text-sm uppercase mb-4">
-                <Star size={16} /> Why choose us
+                <Star size={16} /> Our Philosophy
               </div>
               <h2 className="text-4xl md:text-5xl font-playfair font-semibold text-navy mb-6">
-                Not your average<br/><span className="text-pink-600 italic">vet clinic.</span>
+                Medicine driven by<br/><span className="text-pink-600 italic">empathy.</span>
               </h2>
-              <p className="text-slate-600 text-lg">We designed TAP to feel less like a hospital and more like a second home. Stress-free visits, transparent care, and a lot of treats.</p>
+              <p className="text-slate-600 text-lg">A veterinary visit shouldn't be an anxiety-inducing event. We engineered The Animal Place to remove friction, prioritize transparency, and treat your pet with the dignity they deserve.</p>
             </div>
             
             <ul className="space-y-6">
               {[
-                { title: 'We listen first', text: 'To you and your pet. Every visit starts with a conversation, not a rush.' },
-                { title: 'We make it clear', text: 'No confusing medical jargon. We explain every option, cost, and step.' },
-                { title: 'We stay connected', text: 'Our care doesn\'t end when you leave. We follow up to ensure steady recovery.' }
+                { title: 'Zero Waiting Room Anxiety', text: 'Appointments run on time. Your pet moves straight from arrival to a calming, dedicated examination space.' },
+                { title: 'Absolute Transparency', text: 'No hidden costs or confusing medical jargon. We walk you through every diagnostic and therapeutic option.' },
+                { title: 'Proactive Digital Care', text: 'Access your pet\'s complete medical history, vaccination records, and treatment plans instantly through our digital suite.' }
               ].map((val, i) => (
                 <li key={i} className="flex gap-4">
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-bold">{i + 1}</div>
@@ -370,6 +321,57 @@ export default function Page() {
           )}
         </DialogContent>
       </Dialog>
+
+      <footer className="bg-navy text-white pt-24 pb-12 mt-20 border-t border-slate-800">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-12 mb-16">
+            <div className="md:col-span-2 space-y-6">
+              <Brand size="default" />
+              <p className="text-slate-400 max-w-sm text-lg font-playfair italic">
+                Big love. Better care. Because, family.
+              </p>
+              <div className="flex items-center gap-4 pt-4">
+                <a href="#" className="w-12 h-12 rounded-full bg-white/5 hover:bg-pink-600 flex items-center justify-center transition-colors">
+                  <Camera size={20} />
+                </a>
+                <a href="#" className="w-12 h-12 rounded-full bg-white/5 hover:bg-pink-600 flex items-center justify-center transition-colors">
+                  <Phone size={20} />
+                </a>
+              </div>
+            </div>
+            
+            <div className="space-y-6">
+              <h4 className="text-sm font-semibold tracking-widest uppercase text-pink-500">The Clinic</h4>
+              <ul className="space-y-4 text-slate-300">
+                <li className="flex items-start gap-3">
+                  <MapPin size={18} className="text-slate-500 flex-shrink-0 mt-0.5" />
+                  <span>Srinagar Colony, Yousufguda<br/>Hyderabad, Telangana</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Clock size={18} className="text-slate-500 flex-shrink-0 mt-0.5" />
+                  <span>Open 7 Days a week<br/>9:00 AM – 9:00 PM</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="space-y-6">
+              <h4 className="text-sm font-semibold tracking-widest uppercase text-pink-500">Digital Care</h4>
+              <ul className="space-y-4 text-slate-300">
+                <li><Link href="/book" className="hover:text-pink-400 transition-colors">Book an Appointment</Link></li>
+                <li><Link href="/clinic" className="hover:text-pink-400 transition-colors">Clinic Workspace (Staff)</Link></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
+            <div>&copy; {new Date().getFullYear()} The Animal Place. All rights reserved.</div>
+            <div className="flex gap-6">
+              <a href="#" className="hover:text-white transition-colors">Privacy</a>
+              <a href="#" className="hover:text-white transition-colors">Terms</a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
