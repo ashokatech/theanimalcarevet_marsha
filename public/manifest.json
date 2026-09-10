@@ -1,0 +1,19 @@
+{
+  "name": "The Animal Place",
+  "short_name": "TAP Vet",
+  "description": "Thoughtful veterinary care for your companions — The Animal Place, Hyderabad",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#132e51",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/tap-logo.jpg",
+      "sizes": "1024x1024",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["health", "medical"]
+}

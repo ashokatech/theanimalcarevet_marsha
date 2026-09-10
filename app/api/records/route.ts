@@ -1,8 +1,160 @@
-import {getChatGPTUser} from '@/app/chatgpt-auth';
-import {database} from '@/lib/database';
-import {z} from 'zod';
-const word=z.string().trim().min(1).max(200),date=z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(v=>!isNaN(Date.parse(v))),note=z.string().max(5000).default('');
-const schemas={patients:z.object({pet:word,owner:word,phone:word,species:z.enum(['Dog','Cat','Other']),breed:z.string().max(200).default(''),notes:note}),appointments:z.object({pet:word,owner:word,phone:word,date,time:z.string().regex(/^\d{2}:\d{2}$/),reason:word,status:z.enum(['Requested','Confirmed','Completed','Cancelled']).default('Requested')}),vaccinations:z.object({patientId:word,vaccine:word,given:date,due:date,batch:z.string().max(200).default(''),notes:note}).refine(v=>v.due>=v.given,'Next due date must follow administration'),invoices:z.object({patientId:word,items:z.array(z.object({description:word,quantity:z.number().int().min(1).max(1000),price:z.number().min(0).max(1000000)})).min(1).max(30),tax:z.number().min(0).max(100),status:z.enum(['Unpaid','Paid']).default('Unpaid'),date})};
-export async function GET(){const user=await getChatGPTUser();if(!user)return Response.json({error:'Please sign in to access clinic records.'},{status:401});try{const rows=await database().prepare('SELECT * FROM records WHERE owner = ? ORDER BY created DESC').bind(user.userId).all();return Response.json({records:rows.results.map((r:any)=>({...JSON.parse(r.data),id:r.id,kind:r.kind,created:r.created}))});}catch(e){console.error(e);return Response.json({error:'Records are unavailable. Please try again.'},{status:503})}}
-export async function POST(req:Request){const user=await getChatGPTUser();if(!user)return Response.json({error:'Please sign in first.'},{status:401});if(req.headers.get('origin')&&req.headers.get('origin')!==new URL(req.url).origin)return Response.json({error:'Invalid request origin'},{status:403});try{const body:any=await req.json();const kind=body.kind as keyof typeof schemas;if(!schemas[kind])return Response.json({error:'Unknown record type'},{status:400});const parsed=schemas[kind].safeParse(body.data);if(!parsed.success)return Response.json({error:parsed.error.issues[0]?.message||'Check the form fields.'},{status:400});const data:any=parsed.data;const db=database();if(data.patientId){const pet=await db.prepare('SELECT id FROM records WHERE id = ? AND owner = ? AND kind = ?').bind(data.patientId,user.userId,'patients').first();if(!pet)return Response.json({error:'Select a registered patient.'},{status:400});}if(kind==='invoices'){data.subtotal=data.items.reduce((s:number,i:any)=>s+Math.round(i.price*100)*i.quantity,0);data.total=data.subtotal+Math.round(data.subtotal*data.tax/100);}const id=body.id||crypto.randomUUID();if(body.id){const result=await db.prepare('UPDATE records SET data = ? WHERE id = ? AND owner = ? AND kind = ?').bind(JSON.stringify(data),id,user.userId,kind).run();if(!result.meta.changes)return Response.json({error:'Record not found'},{status:404});}else await db.prepare('INSERT INTO records (id,owner,kind,data,created) VALUES (?,?,?,?,?)').bind(id,user.userId,kind,JSON.stringify(data),new Date().toISOString()).run();return Response.json({id});}catch(e){console.error(e);return Response.json({error:'Could not save. Your form is still available; please try again.'},{status:503})}}
+import { NextResponse } from 'next/server';
+import { getSessionFromCookies } from '@/lib/auth';
+import { getRecords, createRecord, updateRecord, deleteRecord, CollectionName } from '@/lib/database';
+import { z } from 'zod';
 
+const collectionSchema = z.enum(['patients', 'appointments', 'vaccinations', 'invoices', 'medical_records', 'deworming']);
+
+const schemas = {
+  patients: z.object({
+    pet: z.string().min(1),
+    owner: z.string().min(1),
+    phone: z.string().min(1),
+    species: z.enum(['Dog', 'Cat', 'Bird', 'Other']),
+    breed: z.string().optional(),
+    age: z.string().optional(),
+    weight: z.string().optional(),
+    notes: z.string().optional()
+  }),
+  appointments: z.object({
+    pet: z.string().min(1),
+    owner: z.string().min(1),
+    phone: z.string().min(1),
+    date: z.string(),
+    time: z.string(),
+    reason: z.string().min(1),
+    status: z.enum(['Requested', 'Confirmed', 'Completed', 'Cancelled']),
+    notes: z.string().optional()
+  }),
+  vaccinations: z.object({
+    patientId: z.string().min(1),
+    vaccine: z.string().min(1),
+    given: z.string(),
+    due: z.string(),
+    batch: z.string().optional(),
+    notes: z.string().optional()
+  }),
+  invoices: z.object({
+    patientId: z.string().min(1),
+    items: z.array(z.object({
+      description: z.string(),
+      quantity: z.number(),
+      price: z.number()
+    })),
+    tax: z.number(),
+    status: z.enum(['Unpaid', 'Paid']),
+    date: z.string()
+  }),
+  medical_records: z.object({
+    patientId: z.string().min(1),
+    type: z.enum(['Consultation', 'Surgery', 'Lab Result', 'X-Ray', 'Follow-up']),
+    date: z.string(),
+    diagnosis: z.string().min(1),
+    treatment: z.string().min(1),
+    prescription: z.string().optional(),
+    followUpDate: z.string().optional(),
+    notes: z.string().optional()
+  }),
+  deworming: z.object({
+    patientId: z.string().min(1),
+    medication: z.string().min(1),
+    given: z.string(),
+    due: z.string(),
+    weight: z.string().optional(),
+    notes: z.string().optional()
+  })
+};
+
+function checkAuth(request: Request) {
+  const cookieHeader = request.headers.get('cookie');
+  if (!getSessionFromCookies(cookieHeader)) {
+    return false;
+  }
+  return true;
+}
+
+export async function GET(request: Request) {
+  if (!checkAuth(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const collection = searchParams.get('collection');
+
+  const parsedCollection = collectionSchema.safeParse(collection);
+  if (!parsedCollection.success) {
+    return NextResponse.json({ error: 'Invalid collection' }, { status: 400 });
+  }
+
+  try {
+    const records = await getRecords(parsedCollection.data as CollectionName);
+    return NextResponse.json(records);
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to fetch records' }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  if (!checkAuth(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const body = await request.json();
+    const { collection, data, id } = body;
+
+    const parsedCollection = collectionSchema.safeParse(collection);
+    if (!parsedCollection.success) {
+      return NextResponse.json({ error: 'Invalid collection' }, { status: 400 });
+    }
+
+    const colName = parsedCollection.data as CollectionName;
+    const schema = schemas[colName];
+    
+    const parsedData = schema.safeParse(data);
+    if (!parsedData.success) {
+      return NextResponse.json({ error: 'Invalid data', details: parsedData.error }, { status: 400 });
+    }
+
+    const validData = parsedData.data;
+
+    if (colName === 'invoices') {
+      const invoiceData = validData as z.infer<typeof schemas.invoices>;
+      const subtotal = invoiceData.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+      const total = subtotal + invoiceData.tax;
+      (validData as any).subtotal = subtotal;
+      (validData as any).total = total;
+    }
+
+    if (id) {
+      await updateRecord(colName, id, validData);
+      return NextResponse.json({ success: true, id });
+    } else {
+      const newId = await createRecord(colName, validData);
+      return NextResponse.json({ success: true, id: newId });
+    }
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to save record' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  if (!checkAuth(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const body = await request.json();
+    const { collection, id } = body;
+
+    const parsedCollection = collectionSchema.safeParse(collection);
+    if (!parsedCollection.success || !id) {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+    }
+
+    await deleteRecord(parsedCollection.data as CollectionName, id);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to delete record' }, { status: 500 });
+  }
+}
