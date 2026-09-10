@@ -1,4 +1,5 @@
 'use client';
+import CinematicScroller from '@/components/CinematicScroller';
 import { useRef, useState, useEffect } from 'react';
 import { ArrowUpRight, ArrowRight, ArrowLeft, MapPin, Heart, ShieldCheck, Stethoscope, Activity, Scissors, Syringe, Menu, Camera, CalendarDays, PawPrint, Phone, Clock, Star, Sparkles, ChevronRight } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetClose } from '@/components/ui/sheet';
@@ -137,58 +138,8 @@ export default function Page() {
         </div>
       </header>
 
-      <section className="tap-hero container mx-auto px-4 py-16 md:py-24 grid md:grid-cols-2 gap-12 items-center">
-        <div className="tap-hero-copy space-y-6">
-          <div className="inline-flex items-center gap-2 text-pink-600 font-medium tracking-wide text-sm uppercase">
-            <Heart size={16} /> Welcome to the family
-          </div>
-          <h1 className="text-5xl md:text-7xl font-playfair font-semibold leading-tight text-navy">
-            Big love.<br/>Better care.<br/>
-            <span className="text-pink-600 italic">Because, family.</span>
-          </h1>
-          <p className="text-lg text-slate-600 max-w-lg">
-            Thoughtful veterinary care for your companions. Wellness, diagnostics, surgery, vaccinations, grooming & more in Srinagar Colony.
-          </p>
-          <div className="flex flex-wrap gap-4 pt-4">
-            <Link href="/book" className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-3 rounded-full font-medium transition-colors flex items-center gap-2">
-              Book a visit <ArrowUpRight size={18} />
-            </Link>
-            <Link href="#care" className="bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 px-8 py-3 rounded-full font-medium transition-colors">
-              Explore our care
-            </Link>
-          </div>
-          <div className="pt-8 flex items-center gap-3 text-sm font-medium text-slate-500">
-            <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-600">
-              <Heart size={20} fill="currentColor" />
-            </div>
-            Made with love in Hyderabad
-          </div>
-        </div>
-        
-        <div className="tap-scene relative h-[400px] md:h-[600px] perspective-1000" onPointerMove={tilt} onPointerLeave={resetTilt}>
-          <div ref={sceneRef} className="tap-scene-inner w-full h-full relative transition-transform duration-200 ease-out transform-gpu preserve-3d" style={{ transform: 'rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg))' }}>
-            <div className="tap-scene-orbit absolute inset-0 border-2 border-pink-100 rounded-full animate-[spin_20s_linear_infinite]" style={{ transform: 'translateZ(-50px) scale(0.9)' }}></div>
-            <div className="absolute inset-0 flex items-center justify-center" style={{ transform: 'translateZ(0)' }}>
-              <div className="tap-pet-frame relative w-full h-full max-w-md mx-auto">
-                <Image src="/tap-3d-pets.png" alt="Happy pets" fill className="object-contain" priority />
-                
-                <div className="tap-float tap-float-top absolute top-10 left-10 bg-white p-3 rounded-2xl shadow-lg flex items-center gap-3 animate-bounce" style={{ transform: 'translateZ(50px)' }}>
-                  <div className="bg-green-100 p-2 rounded-full text-green-600"><ShieldCheck size={24} /></div>
-                  <div className="text-sm font-medium">Expert Care</div>
-                </div>
-                
-                <div className="tap-float tap-float-bottom absolute bottom-20 right-10 bg-white p-3 rounded-2xl shadow-lg flex items-center gap-3" style={{ transform: 'translateZ(80px)' }}>
-                  <div className="bg-blue-100 p-2 rounded-full text-blue-600"><CalendarDays size={24} /></div>
-                  <div>
-                    <div className="text-sm font-medium">Open Everyday</div>
-                    <Link href="/book" className="text-xs text-pink-600 font-medium">Book now &rarr;</Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Cinematic Hero Scroll Component */}
+      <CinematicScroller totalFrames={120} />
 
       <div className="tap-ribbon bg-navy text-pink-200 py-4 overflow-hidden flex whitespace-nowrap text-sm font-medium tracking-widest uppercase">
         <div className="animate-[marquee_20s_linear_infinite] flex items-center gap-8 px-4">
